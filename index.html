@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gonçalo Aldeia — Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0c0c;
+    --surface: #141414;
+    --border: #222;
+    --accent: #b8ff57;
+    --accent2: #57c4ff;
+    --text: #f0f0f0;
+    --muted: #666;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.5;
+  }
+
+  /* GRID BG */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* LAYOUT */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* NAV */
+  nav {
+    padding: 2rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  /* HERO */
+  .hero {
+    padding: 7rem 0 5rem;
+    position: relative;
+  }
+
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.1s;
+  }
+
+  .hero h1 {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.2s;
+  }
+
+  .hero h1 span {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+  }
+
+  .hero-desc {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 480px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.35s;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.5s;
+  }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight: 500;
+  }
+
+  .btn-primary:hover {
+    background: transparent;
+    color: var(--accent);
+  }
+
+  /* FLOATING BADGE */
+  .hero-badge {
+    position: absolute;
+    right: 0;
+    top: 7rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.6s;
+  }
+
+  .hero-badge span {
+    display: block;
+    color: var(--accent);
+  }
+
+  /* SECTION */
+  section {
+    padding: 5rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+  }
+
+  .section-label::before {
+    content: '// ';
+    color: var(--accent);
+  }
+
+  /* PROJECTS */
+  .projects-grid {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .project-card {
+    background: var(--bg);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s;
+    text-decoration: none;
+    display: block;
+    color: inherit;
+  }
+
+  .project-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+    transform-origin: bottom;
+  }
+
+  .project-card:hover { background: var(--surface); }
+  .project-card:hover::before { transform: scaleY(1); }
+
+  .project-num {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .project-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+  }
+
+  .project-desc {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    max-width: 560px;
+  }
+
+  .project-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--accent2);
+    border: 1px solid rgba(87, 196, 255, 0.2);
+    padding: 0.2rem 0.6rem;
+    letter-spacing: 0.05em;
+  }
+
+  .project-arrow {
+    position: absolute;
+    right: 2.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    color: var(--border);
+    transition: all 0.2s;
+  }
+
+  .project-card:hover .project-arrow {
+    color: var(--accent);
+    transform: translateY(-50%) translateX(4px);
+  }
+
+  .project-live {
+    position: absolute;
+    top: 2.5rem;
+    right: 2.5rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .project-live::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  /* STACK */
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .stack-item {
+    background: var(--bg);
+    padding: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    transition: all 0.2s;
+    cursor: default;
+  }
+
+  .stack-item:hover {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .stack-item span {
+    display: block;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* CONTACT */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .contact-item {
+    background: var(--bg);
+    padding: 2rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.2s;
+    font-family: var(--mono);
+  }
+
+  .contact-item:hover { background: var(--surface); }
+
+  .contact-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-value {
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (max-width: 600px) {
+    .hero-badge { display: none; }
+    .contact-grid { grid-template-columns: 1fr; }
+    .project-arrow { display: none; }
+    .project-live { position: static; margin-bottom: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="container">
+  <nav>
+    <div class="nav-logo">goncaloaldeia04-oss</div>
+    <ul class="nav-links">
+      <li><a href="#projects">projetos</a></li>
+      <li><a href="#stack">stack</a></li>
+      <li><a href="#contact">contacto</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" style="border:none; padding-top: 7rem;">
+    <div class="hero-tag">Porto, Portugal · Disponível para trabalho</div>
+    <h1>Gonçalo<br><span>Aldeia</span></h1>
+    <p class="hero-desc">Junior developer e solo builder. Construo SaaS, plataformas educativas e ferramentas web com Python, FastAPI e Docker.</p>
+    <div class="hero-cta">
+      <a href="https://trifectai.pt" target="_blank" class="btn btn-primary">Ver TrifectAI →</a>
+      <a href="https://github.com/goncaloaldeia04-oss" target="_blank" class="btn">GitHub</a>
+      <a href="mailto:aldeiagoncalo04@gmail.com" class="btn">Email</a>
+    </div>
+    <div class="hero-badge">
+      Status<span>Aberto a oportunidades</span>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="section-label">Projetos</div>
+    <div class="projects-grid reveal">
+
+      <a href="https://trifectai.pt" target="_blank" class="project-card">
+        <div class="project-live">LIVE</div>
+        <div class="project-num">01</div>
+        <div class="project-title">TrifectAI</div>
+        <p class="project-desc">Plataforma SaaS que envia o mesmo prompt ao Claude, ChatGPT e Gemini em simultâneo e devolve uma síntese estruturada com consensos, divergências e score de confiança.</p>
+        <div class="project-tags">
+          <span class="tag">Python</span>
+          <span class="tag">FastAPI</span>
+          <span class="tag">Docker</span>
+          <span class="tag">Stripe</span>
+          <span class="tag">PostgreSQL</span>
+        </div>
+      </a>
+
+      <a href="https://github.com/goncaloaldeia04-oss/site-cursos" target="_blank" class="project-card">
+        <div class="project-num">02</div>
+        <div class="project-title">StudyHubPT</div>
+        <p class="project-desc">Plataforma de apoio ao estudo para alunos do 1º ao 9º ano com currículo português. Lições, quizzes e autenticação por PIN.</p>
+        <div class="project-tags">
+          <span class="tag">Django</span>
+          <span class="tag">PostgreSQL</span>
+          <span class="tag">Python</span>
+          <span class="tag">Render</span>
+        </div>
+      </a>
+
+      <a href="https://github.com/goncaloaldeia04-oss/professional-cv-maker" target="_blank" class="project-card">
+        <div class="project-num">03</div>
+        <div class="project-title">CV Maker</div>
+        <p class="project-desc">Construtor de CVs no browser com preview em tempo real, temas e exportação para PDF. Sem backend, sem conta, sem dados guardados.</p>
+        <div class="project-tags">
+          <span class="tag">HTML</span>
+          <span class="tag">CSS</span>
+          <span class="tag">JavaScript</span>
+        </div>
+      </a>
+
+      <a href="https://github.com/goncaloaldeia04-oss/business-tools-bundle" target="_blank" class="project-card">
+        <div class="project-num">04</div>
+        <div class="project-title">Business Tools Bundle</div>
+        <p class="project-desc">Suite de ferramentas para freelancers e pequenas empresas: gerador de assinaturas de email, orçamentos e faturas — tudo no browser.</p>
+        <div class="project-tags">
+          <span class="tag">HTML</span>
+          <span class="tag">CSS</span>
+          <span class="tag">JavaScript</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- STACK -->
+  <section id="stack">
+    <div class="section-label">Stack</div>
+    <div class="stack-grid reveal">
+      <div class="stack-item"><span>🐍</span>Python</div>
+      <div class="stack-item"><span>⚡</span>FastAPI</div>
+      <div class="stack-item"><span>🎸</span>Django</div>
+      <div class="stack-item"><span>🐘</span>PostgreSQL</div>
+      <div class="stack-item"><span>🐳</span>Docker</div>
+      <div class="stack-item"><span>🌐</span>Nginx</div>
+      <div class="stack-item"><span>💳</span>Stripe</div>
+      <div class="stack-item"><span>🔧</span>Git / GitHub</div>
+      <div class="stack-item"><span>🖥️</span>HTML/CSS/JS</div>
+      <div class="stack-item"><span>🤖</span>Claude / OpenAI API</div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-label">Contacto</div>
+    <div class="contact-grid reveal">
+      <a href="mailto:aldeiagoncalo04@gmail.com" class="contact-item">
+        <div class="contact-label">Email</div>
+        <div class="contact-value">aldeiagoncalo04@gmail.com</div>
+      </a>
+      <a href="https://github.com/goncaloaldeia04-oss" target="_blank" class="contact-item">
+        <div class="contact-label">GitHub</div>
+        <div class="contact-value">goncaloaldeia04-oss</div>
+      </a>
+      <a href="https://trifectai.pt" target="_blank" class="contact-item">
+        <div class="contact-label">Projeto principal</div>
+        <div class="contact-value">trifectai.pt</div>
+      </a>
+      <a href="https://www.linkedin.com/in/goncaloaldeia" target="_blank" class="contact-item">
+        <div class="contact-label">LinkedIn</div>
+        <div class="contact-value">Gonçalo Aldeia</div>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2026 Gonçalo Aldeia</span>
+    <span>Porto, Portugal</span>
+  </footer>
+</div>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+</script>
+</body>
+</html>
